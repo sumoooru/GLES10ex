@@ -3,6 +3,7 @@ package jp.ac.titech.itpro.sdl.gles10ex;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import java.util.ArrayList;
 

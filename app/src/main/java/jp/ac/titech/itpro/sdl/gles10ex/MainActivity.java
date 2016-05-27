@@ -4,6 +4,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.widget.SeekBar;
 
 
@@ -13,6 +14,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private GLSurfaceView glView;
     private SimpleRenderer renderer;
     private SeekBar rotationBarX, rotationBarY, rotationBarZ;
+
+    private int px = 0, py = 0, pz = 0;
+    private float baseX, baseY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         renderer = new SimpleRenderer();
         renderer.addObj(new Cube(0.5f, 0, 0.2f, -3));
         renderer.addObj(new Pyramid(0.5f, 0, 0, 0));
+        renderer.addObj(new Tablet(0.8f, 1.0f, 0.8f, -2));
         glView.setRenderer(renderer);
     }
 
@@ -50,13 +55,63 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (seekBar == rotationBarX)
+        if (seekBar == rotationBarX){
+            px = progress;
             renderer.setRotationX(progress);
-        else if (seekBar == rotationBarY)
+        }
+        else if (seekBar == rotationBarY){
+            py = progress;
             renderer.setRotationY(progress);
-        else if (seekBar == rotationBarZ)
+        }
+        else if (seekBar == rotationBarZ){
+            pz = progress;
             renderer.setRotationZ(progress);
+        }
     }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float ex = event.getX() / 10, ey = event.getY() / 10;
+        switch(event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                baseX = ex;
+                baseY = ey;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float diffX = ex - baseX, diffY = ey - baseY;
+                baseX = ex;
+                baseY = ey;
+                if(0 <= px + diffY && px + diffY <= 360){
+                    rotationBarX.setProgress((int)(px + diffY));
+                    renderer.setRotationX(px + diffY);
+                }else if(px + diffY > 360){
+                    rotationBarX.setProgress(0);
+                    renderer.setRotationX(0);
+                }else{
+                    rotationBarX.setProgress(360);
+                    renderer.setRotationX(360);
+                }
+
+                if(0 <= py - diffX && py - diffX <= 360){
+                    rotationBarY.setProgress((int)(py - diffX));
+                    renderer.setRotationY(py - diffX);
+                }else if(py - diffX > 360){
+                    rotationBarY.setProgress(0);
+                    renderer.setRotationY(0);
+                }else{
+                    rotationBarY.setProgress(360);
+                    renderer.setRotationY(360);
+                }
+//                Log.d(TAG, "x :" + (int)(px + diffY));
+            break;
+            case MotionEvent.ACTION_UP:
+                break;
+        }
+//        renderer.setRotationX(px + 10);
+        return super.onTouchEvent(event);
+    }
+
+
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
